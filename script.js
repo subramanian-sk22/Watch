@@ -26,17 +26,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Buy button handler (simple demo behaviour)
+  // Buy button handler - add to cart and redirect to payment
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.addEventListener('click', () => {
       const card = btn.closest('.product-card');
       const title = card ? (card.querySelector('h3')?.innerText || 'item') : 'item';
-      if (confirm(`Add "${title}" to cart?`)) {
-        btn.disabled = true;
-        btn.textContent = 'Added';
-        btn.style.opacity = '0.85';
-        console.log('Added to cart:', title);
+      const priceText = card ? (card.querySelector('p')?.innerText || '0') : '0';
+      const price = parseInt(priceText.replace(/[^\d]/g, ''));
+
+      // Get current cart from localStorage
+      let cart = [];
+      const savedCart = localStorage.getItem('cart');
+      if (savedCart) {
+        cart = JSON.parse(savedCart);
       }
+
+      // Add or update item in cart
+      const existingItem = cart.find(item => item.name === title);
+      if (existingItem) {
+        existingItem.quantity++;
+      } else {
+        cart.push({
+          id: cart.length + 1,
+          name: title,
+          price: price,
+          quantity: 1
+        });
+      }
+
+      // Save cart and redirect
+      localStorage.setItem('cart', JSON.stringify(cart));
+      btn.disabled = true;
+      btn.textContent = 'Added to Cart';
+      btn.style.opacity = '0.85';
+      
+      // Redirect to payment page after a brief delay
+      setTimeout(() => {
+        window.location.href = 'payment.html';
+      }, 800);
     });
   });
 
@@ -52,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.siteHelpers = {
   scrollTo: selector => { const el = document.querySelector(selector); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
   toggleVideoPlay: () => { const v = document.querySelector('.video-background video'); if (v) v.paused ? v.play() : v.pause(); },
-  toggleVideoMute: () => { const v = document.querySelector('.video-background video'); if (v) v.muted = !v.muted; },
+    toggleVideoMute: () => { const v = document.querySelector('.video-background video'); if (v) v.muted = !v.muted; },
   addToCart: title => { console.log('Pretend add to cart:', title); }
 };
 
